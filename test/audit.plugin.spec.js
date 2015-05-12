@@ -113,4 +113,41 @@ describe('Audit Pluggin Tests', function () {
             done(new Error('Second connection is not ready'));
         }
     });
+
+    it('Audit an Model operation', function (done) {
+        var ts = moment().valueOf();
+        var auditTest = new AuditTest({ts: ts});
+        auditTest.save(function(err, doc) {
+            AuditTest.findByIdAndRemove(doc._id, function (err, doc) {
+                AuditTest.logChange(doc, 'delete', ts, function(err) {
+                    if (err){
+                        return done(err);
+                    }
+
+                    AuditTest.getAudit().findOne({'location': 'audittests', 'document.ts': ts, 'operation': 'delete'}, function(err) {
+                        done(err);
+                    });
+                });
+            });
+        });
+    });
+
+    it('Audit a partial operation', function (done) {
+        var ts = moment().valueOf();
+        var auditTest = new AuditTest({ts: ts});
+        auditTest.save(function(err, doc) {
+            AuditTest.remove({ts: TS}, function (err, num) {
+                AuditTest.logPartialChange(new AuditTest({_id: doc._id}), 'delete', ts, function(err) {
+                    if (err){
+                        return done(err);
+                    }
+
+                    AuditTest.getAudit().findOne({'location': 'audittests', 'document._id': doc._id, 'operation': 'delete'}, function(err, audit) {
+                        audit.partial.should.eql(true);
+                        done(err);
+                    });
+                });
+            });
+        });
+    });
 });
