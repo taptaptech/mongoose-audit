@@ -4,6 +4,8 @@ Keeps a history of all changes of a document.
 
 ## Introduction
 
+Open source Mongodb does not provide an audit service (You have it available in the enterprise version).
+
 This mongoose plugin allows you to audit changes in the models. It provides two kind of audits:
 
 * In the modified collection it adds the fields: _updateAt, _createdAt and _user (optional).
