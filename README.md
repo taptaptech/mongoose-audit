@@ -48,11 +48,6 @@ anSchema.plugin(require('moongose-audit'), {connection: myConnection})
 otherShema.plugin(require('moongose-audit'), {connection: otherConnection})
 ```
 
-## TODO
-
-* Optionally provide the action that originated the operation (_action field)
-* Be able to change the name of the audit collection
-* Add unit tests and integrate with travis-ci.org.
 
 ## Credits
 
