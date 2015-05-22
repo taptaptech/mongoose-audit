@@ -4,6 +4,7 @@ var auditPlugin = require('lib/audit.plugin');
 var audit = require('lib/audit.model');
 var mongoose = require('mongoose');
 var moment = require('moment');
+var _ = require('lodash');
 
 describe('Audit Pluggin Tests', function () {
 
@@ -132,22 +133,45 @@ describe('Audit Pluggin Tests', function () {
         });
     });
 
-    it('Audit a partial operation', function (done) {
+    it('Audit a bulk delete operation', function (done) {
         var ts = moment().valueOf();
-        var auditTest = new AuditTest({ts: ts});
-        auditTest.save(function(err, doc) {
-            AuditTest.remove({ts: TS}, function (err, num) {
-                AuditTest.logPartialChange(new AuditTest({_id: doc._id}), 'delete', ts, function(err) {
+        var selector = {ts: ts};
+        var auditTest = new AuditTest(selector);
+        auditTest.save(function(err) {
+            AuditTest.remove(selector, function (err, num) {
+                AuditTest.logBulkDelete(selector, function(err) {
                     if (err){
                         return done(err);
                     }
-
-                    AuditTest.getAudit().findOne({'location': 'audittests', 'document._id': doc._id, 'operation': 'delete'}, function(err, audit) {
-                        audit.partial.should.eql(true);
+                    AuditTest.getAudit().findOne({'location': 'audittests', 'selector': selector, 'operation': 'delete'}, function(err, audit) {
                         done(err);
                     });
                 });
             });
         });
     });
+
+    it('Audit a bulk update operation', function (done) {
+        var ts = moment().valueOf();
+        var selector = {ts: ts};
+        var auditTest = new AuditTest(selector);
+        var update = {'$set': {value: 'foo'}};
+        auditTest.save(function(err) {
+            AuditTest.update(selector, update, function (err, num) {
+                AuditTest.logBulkUpdate(selector, update, function(err) {
+                    if (err){
+                        return done(err);
+                    }
+                    AuditTest.getAudit().findOne({'location': 'audittests', 'selector': selector, 'operation': 'update'}, function(err, audit) {
+                        // TODO note the change in the update operation. We had to do this way as there is a bug in the mongodb driver we are using
+                        // related to bson. The driver it is not able to store a key starging with '$'
+                        audit.document.should.eql({'set': {value: 'foo'}});
+                        done(err);
+                    });
+                });
+            });
+        });
+    });
+
+
 });
