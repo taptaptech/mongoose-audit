@@ -4,7 +4,7 @@
   "description": "Keeps a history of all changes of a document.",
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.org/taptap/mongoose-audit"
+    "url": "git@github.com:taptaptech/mongoose-audit.git"
   },
   "keywords": [
     "mongoose",
